@@ -12,3 +12,4 @@ asdf plugin-add sops https://github.com/feniix/asdf-sops.git
 ## Use
 
 Check out the [asdf](https://github.com/asdf-vm/asdf) readme for instructions.
+
