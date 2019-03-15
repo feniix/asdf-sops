@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+[ -z "${ASDF_INSTALL_TYPE+x}" ] && echo "ASDF_INSTALL_TYPE is required" && exit 1
+[ -z "${ASDF_INSTALL_VERSION+x}" ] && echo "ASDF_INSTALL_VERSION is required" && exit 1
+[ -z "${ASDF_INSTALL_PATH+x}" ] && echo "ASDF_INSTALL_PATH is required" && exit 1
+
+install() {
+  local install_type=$1
+  [ "$install_type" != "version" ] && echo "intall type, $install_type, is not supported" && exit 1
+
+  local version=$2
+  local install_path=$3
+
+  local bin_install_path="$install_path/bin"
+  local bin_path="${bin_install_path}/helmfile"
+
+  local platform
+  [ "Linux" = "$(uname)" ] && platform="linux" || platform="darwin"
+
+  local download_url
+  download_url="https://github.com/mozilla/sops/releases/download/${version}/sops_${version}.${platform}"
+
+  mkdir -p "${bin_install_path}"
+
+  echo "Downloading helmfile from ${download_url}"
+  curl -sL "$download_url" -o "$bin_path"
+  chmod +x "$bin_path"
+}
+
+install "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_INSTALL_PATH"
+
