@@ -20,7 +20,7 @@ install() {
   [ "Linux" = "$(uname)" ] && platform="linux" || platform="darwin"
 
   local download_url
-  download_url="https://github.com/mozilla/sops/releases/download/${version}/sops_${version}.${platform}"
+  download_url="https://github.com/mozilla/sops/releases/download/${version}/sops-${version}.${platform}"
 
   mkdir -p "${bin_install_path}"
 
