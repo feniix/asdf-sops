@@ -8,7 +8,7 @@ set -euo pipefail
 
 install() {
   local install_type=$1
-  [ "$install_type" != "version" ] && echo "intall type, $install_type, is not supported" && exit 1
+  [ "$install_type" != "version" ] && echo "install type, $install_type, is not supported" && exit 1
 
   local version=$2
   local install_path=$3
