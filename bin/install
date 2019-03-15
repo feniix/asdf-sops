@@ -14,7 +14,7 @@ install() {
   local install_path=$3
 
   local bin_install_path="$install_path/bin"
-  local bin_path="${bin_install_path}/helmfile"
+  local bin_path="${bin_install_path}/sops"
 
   local platform
   [ "Linux" = "$(uname)" ] && platform="linux" || platform="darwin"
@@ -24,7 +24,7 @@ install() {
 
   mkdir -p "${bin_install_path}"
 
-  echo "Downloading helmfile from ${download_url}"
+  echo "Downloading sops from ${download_url}"
   curl -sL "$download_url" -o "$bin_path"
   chmod +x "$bin_path"
 }
