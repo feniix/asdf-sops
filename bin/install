@@ -2,15 +2,26 @@
 
 set -euo pipefail
 
+readonly NEW_VERSION_FORMAT_START=3.5.0
+
 [ -z "${ASDF_INSTALL_TYPE+x}" ] && echo "ASDF_INSTALL_TYPE is required" && exit 1
 [ -z "${ASDF_INSTALL_VERSION+x}" ] && echo "ASDF_INSTALL_VERSION is required" && exit 1
 [ -z "${ASDF_INSTALL_PATH+x}" ] && echo "ASDF_INSTALL_PATH is required" && exit 1
+
+semver_gte() {
+  # return true if semver $1 >= $2
+  local v1=$(echo "${1//./ }" | xargs printf "%d%03d%03d")
+  local v2=$(echo "${2//./ }" | xargs printf "%d%03d%03d")
+  (( $v1 >= $v2))
+}
 
 install() {
   local install_type=$1
   [ "$install_type" != "version" ] && echo "install type, $install_type, is not supported" && exit 1
 
-  local version=$2
+  local version=${2//v/}
+  semver_gte "$version" "$NEW_VERSION_FORMAT_START" && version="v${version}"
+
   local install_path=$3
 
   local bin_install_path="$install_path/bin"
