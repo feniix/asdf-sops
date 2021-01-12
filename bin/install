@@ -10,7 +10,13 @@ install() {
   local install_type=$1
   [ "$install_type" != "version" ] && echo "install type, $install_type, is not supported" && exit 1
 
+  # Note that we're adding back the 'v' tag prefix only for versions > 3.4
   local version=$2
+  if [[ ! (${version} =~ [1-3]\.[0-4]) ]]; then
+    # version is greater than 3.4.0
+    version="v${version}"
+  fi
+
   local install_path=$3
 
   local bin_install_path="$install_path/bin"
