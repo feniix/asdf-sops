@@ -31,7 +31,7 @@ install() {
   mkdir -p "${bin_install_path}"
 
   echo "Downloading sops from ${download_url}"
-  curl -sL "$download_url" -o "$bin_path"
+  curl -sfL "$download_url" -o "$bin_path" || >&2 echo "Error: URL responded exceptionally"
   chmod +x "$bin_path"
 }
 
