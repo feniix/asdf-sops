@@ -6,7 +6,7 @@ set -euo pipefail
 [ -z "${ASDF_INSTALL_VERSION+x}" ] && echo "ASDF_INSTALL_VERSION is required" && exit 1
 [ -z "${ASDF_INSTALL_PATH+x}" ] && echo "ASDF_INSTALL_PATH is required" && exit 1
 
-install() {
+install_sops() {
   local install_type=$1
   [ "$install_type" != "version" ] && echo "install type, $install_type, is not supported" && exit 1
 
@@ -22,11 +22,7 @@ install() {
   local bin_install_path="$install_path/bin"
   local bin_path="${bin_install_path}/sops"
 
-  local platform
-  [ "Linux" = "$(uname)" ] && platform="linux" || platform="darwin"
-
-  local download_url
-  download_url="https://github.com/mozilla/sops/releases/download/${version}/sops-${version}.${platform}"
+  local download_url="$(get_download_url $version)"
 
   mkdir -p "${bin_install_path}"
 
@@ -35,5 +31,28 @@ install() {
   chmod +x "$bin_path"
 }
 
-install "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_INSTALL_PATH"
+get_arch() {
+  uname | tr '[:upper:]' '[:lower:]'
+}
+
+get_cpu() {
+  local machine_hardware_name
+  machine_hardware_name=${ASDF_SOPS_OVERWRITE_ARCH:-"$(uname -m)"}
+
+  case "$machine_hardware_name" in
+    'x86_64') local cpu_type="amd64";;
+    'aarch64') local cpu_type="arm64";;
+    *) local cpu_type="$machine_hardware_name";;
+  esac
+
+  echo "$cpu_type"
+}
+
+get_download_url() {
+  local version="$1"
+  local platform="$(get_arch)"
+  echo "https://github.com/mozilla/sops/releases/download/${version}/sops-${version}.${platform}.$(get_cpu)"
+}
+
+install_sops "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_INSTALL_PATH"
 
