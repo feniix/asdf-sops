@@ -51,7 +51,15 @@ get_cpu() {
 get_download_url() {
   local version="$1"
   local platform="$(get_arch)"
-  echo "https://github.com/mozilla/sops/releases/download/${version}/sops-${version}.${platform}.$(get_cpu)"
+  local url=""
+  
+  if [[ "$version" < "v3.7.2" ]]; then
+    url="https://github.com/mozilla/sops/releases/download/${version}/sops-${version}.${platform}"
+  else
+    url="https://github.com/mozilla/sops/releases/download/${version}/sops-${version}.${platform}.$(get_cpu)"
+  fi
+  
+  echo "$url"
 }
 
 install_sops "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_INSTALL_PATH"
