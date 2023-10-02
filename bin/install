@@ -54,9 +54,9 @@ get_download_url() {
   local url=""
   
   if [[ "$version" < "v3.7.2" ]]; then
-    url="https://github.com/mozilla/sops/releases/download/${version}/sops-${version}.${platform}"
+    url="https://github.com/getsops/sops/releases/download/${version}/sops-${version}.${platform}"
   else
-    url="https://github.com/mozilla/sops/releases/download/${version}/sops-${version}.${platform}.$(get_cpu)"
+    url="https://github.com/getsops/sops/releases/download/${version}/sops-${version}.${platform}.$(get_cpu)"
   fi
   
   echo "$url"
