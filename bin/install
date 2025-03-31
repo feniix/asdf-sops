@@ -52,8 +52,9 @@ get_download_url() {
   local version="$1"
   local platform="$(get_arch)"
   local url=""
+  local version_no_prefix="${version#v}"
   
-  if [[ "$version" < "v3.7.2" ]]; then
+  if [[ "$(printf '%s\n' "3.7.2" "$version_no_prefix" | sort -V | head -n1)" = "$version_no_prefix" ]]; then
     url="https://github.com/getsops/sops/releases/download/${version}/sops-${version}.${platform}"
   else
     url="https://github.com/getsops/sops/releases/download/${version}/sops-${version}.${platform}.$(get_cpu)"
