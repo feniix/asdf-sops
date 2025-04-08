@@ -7,17 +7,16 @@ set -euo pipefail
 [ -z "${ASDF_INSTALL_PATH+x}" ] && echo "ASDF_INSTALL_PATH is required" && exit 1
 
 install_sops() {
-  local install_type=$1
+  local install_type="$1"
   [ "$install_type" != "version" ] && echo "install type, $install_type, is not supported" && exit 1
 
   # Note that we're adding back the 'v' tag prefix only for versions > 3.4
-  local version=$2
-  local major_version=$(echo ${version} | cut -d. -f1)
-  local minor_version=$(echo ${version} | cut -d. -f2)
+  local version="$2"
+  local version_no_prefix="${version#v}"
 
-  if [[ "${major_version}" -gt 3 || ("${major_version}" -eq 3 && "${minor_version}" -gt 4) ]]; then
+  if [[ "$(printf '%s\n' "3.4.0" "$version_no_prefix" | sort -Vr | head -n1)" = "$version_no_prefix" ]]; then
     # version is greater than 3.4.0
-    version="v${version}"
+    version="v${version_no_prefix}"
   fi
 
   local install_path=$3
