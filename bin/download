@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+current_script_path=${BASH_SOURCE[0]}
+plugin_dir=$(dirname "$(dirname "$current_script_path")")
+
+# shellcheck source=lib/utils.bash
+source "${plugin_dir}/lib/utils.bash"
+
+[ "${ASDF_INSTALL_TYPE:-}" = "version" ] ||
+  fail "only release-version installs are supported"
+[ -n "${ASDF_INSTALL_VERSION:-}" ] || fail "ASDF_INSTALL_VERSION is required"
+[ -n "${ASDF_DOWNLOAD_PATH:-}" ] || fail "ASDF_DOWNLOAD_PATH is required"
+
+mkdir -p "$ASDF_DOWNLOAD_PATH"
+download_release "$ASDF_INSTALL_VERSION" "$ASDF_DOWNLOAD_PATH/sops"
+chmod +x "$ASDF_DOWNLOAD_PATH/sops"

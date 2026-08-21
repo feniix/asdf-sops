@@ -2,81 +2,30 @@
 
 set -euo pipefail
 
-[ -z "${ASDF_INSTALL_TYPE+x}" ] && echo "ASDF_INSTALL_TYPE is required" && exit 1
-[ -z "${ASDF_INSTALL_VERSION+x}" ] && echo "ASDF_INSTALL_VERSION is required" && exit 1
-[ -z "${ASDF_INSTALL_PATH+x}" ] && echo "ASDF_INSTALL_PATH is required" && exit 1
+current_script_path=${BASH_SOURCE[0]}
+plugin_dir=$(dirname "$(dirname "$current_script_path")")
 
-install_sops() {
-  local install_type=$1
-  [ "$install_type" != "version" ] && echo "install type, $install_type, is not supported" && exit 1
+# shellcheck source=lib/utils.bash
+source "${plugin_dir}/lib/utils.bash"
 
-  # Note that we're adding back the 'v' tag prefix only for versions > 3.4
-  local version=$2
-  local major_version
-  major_version=$(echo "${version}" | cut -d. -f1)
-  local minor_version
-  minor_version=$(echo "${version}" | cut -d. -f2)
+[ "${ASDF_INSTALL_TYPE:-}" = "version" ] ||
+  fail "only release-version installs are supported"
+[ -n "${ASDF_INSTALL_VERSION:-}" ] || fail "ASDF_INSTALL_VERSION is required"
+[ -n "${ASDF_INSTALL_PATH:-}" ] || fail "ASDF_INSTALL_PATH is required"
 
-  if [[ "${major_version}" -gt 3 || ("${major_version}" -eq 3 && "${minor_version}" -gt 4) ]]; then
-    # version is greater than 3.4.0
-    version="v${version}"
-  fi
+download_path=${ASDF_DOWNLOAD_PATH:-}
+temp_dir=""
+if [ -z "$download_path" ]; then
+  temp_dir=$(mktemp -d "${TMPDIR:-/tmp}/asdf-sops.XXXXXX")
+  download_path=$temp_dir
+  ASDF_DOWNLOAD_PATH=$download_path "${plugin_dir}/bin/download"
+fi
+trap 'if [ -n "$temp_dir" ]; then rm -rf "$temp_dir"; fi' EXIT
 
-  local install_path=$3
+install_path="${ASDF_INSTALL_PATH%/}/bin"
+mkdir -p "$install_path"
+cp "$download_path/sops" "$install_path/sops"
+chmod +x "$install_path/sops"
+test -x "$install_path/sops" || fail "expected $install_path/sops to be executable"
 
-  local bin_install_path="$install_path/bin"
-  local bin_path="${bin_install_path}/sops"
-
-  local download_url
-  download_url="$(get_download_url "$version")"
-
-  mkdir -p "${bin_install_path}"
-
-  echo "Downloading sops from ${download_url}"
-  if ! curl -fsSL "$download_url" -o "$bin_path"; then
-    echo "Error: failed to download SOPS ${version}" >&2
-    return 1
-  fi
-  chmod +x "$bin_path"
-}
-
-get_arch() {
-  uname | tr '[:upper:]' '[:lower:]'
-}
-
-get_cpu() {
-  local machine_hardware_name
-  machine_hardware_name=${ASDF_SOPS_OVERWRITE_ARCH:-"$(uname -m)"}
-
-  case "$machine_hardware_name" in
-    'x86_64') echo "amd64";;
-    'aarch64') echo "arm64";;
-    *) echo "$machine_hardware_name";;
-  esac
-}
-
-get_download_url() {
-  local version="$1"
-  local platform
-  platform="$(get_arch)"
-  local url=""
-  local version_no_prefix="${version#v}"
-  local numeric_version="${version_no_prefix%%[-+]*}"
-  local major minor patch
-  IFS=. read -r major minor patch <<< "$numeric_version"
-
-  if [[ ! "$major" =~ ^[0-9]+$ || ! "$minor" =~ ^[0-9]+$ || ! "$patch" =~ ^[0-9]+$ ]]; then
-    echo "Unsupported SOPS version: ${version}" >&2
-    return 1
-  fi
-
-  if ((major < 3 || (major == 3 && minor < 7) || (major == 3 && minor == 7 && patch <= 2))); then
-    url="https://github.com/getsops/sops/releases/download/${version}/sops-${version}.${platform}"
-  else
-    url="https://github.com/getsops/sops/releases/download/${version}/sops-${version}.${platform}.$(get_cpu)"
-  fi
-  
-  echo "$url"
-}
-
-install_sops "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_INSTALL_PATH"
+echo "SOPS ${ASDF_INSTALL_VERSION} installation was successful"
