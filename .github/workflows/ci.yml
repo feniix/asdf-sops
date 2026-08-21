@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: shellcheck -x -P . bin/* lib/*.bash
+
+  plugin-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            version: latest
+          - os: macos-latest
+            version: latest
+          - os: ubuntu-latest
+            version: 3.7.2
+          - os: ubuntu-latest
+            version: 3.7.3
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: asdf-vm/actions/plugin-test@v4
+        with:
+          command: sops --version
+          version: ${{ matrix.version }}
+          github_token: ${{ github.token }}
