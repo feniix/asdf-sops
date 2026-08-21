@@ -12,8 +12,10 @@ install_sops() {
 
   # Note that we're adding back the 'v' tag prefix only for versions > 3.4
   local version=$2
-  local major_version=$(echo ${version} | cut -d. -f1)
-  local minor_version=$(echo ${version} | cut -d. -f2)
+  local major_version
+  major_version=$(echo "${version}" | cut -d. -f1)
+  local minor_version
+  minor_version=$(echo "${version}" | cut -d. -f2)
 
   if [[ "${major_version}" -gt 3 || ("${major_version}" -eq 3 && "${minor_version}" -gt 4) ]]; then
     # version is greater than 3.4.0
@@ -25,12 +27,16 @@ install_sops() {
   local bin_install_path="$install_path/bin"
   local bin_path="${bin_install_path}/sops"
 
-  local download_url="$(get_download_url $version)"
+  local download_url
+  download_url="$(get_download_url "$version")"
 
   mkdir -p "${bin_install_path}"
 
   echo "Downloading sops from ${download_url}"
-  curl -sfL "$download_url" -o "$bin_path" || >&2 echo "Error: URL responded exceptionally"
+  if ! curl -fsSL "$download_url" -o "$bin_path"; then
+    echo "Error: failed to download SOPS ${version}" >&2
+    return 1
+  fi
   chmod +x "$bin_path"
 }
 
@@ -43,20 +49,19 @@ get_cpu() {
   machine_hardware_name=${ASDF_SOPS_OVERWRITE_ARCH:-"$(uname -m)"}
 
   case "$machine_hardware_name" in
-    'x86_64') local cpu_type="amd64";;
-    'aarch64') local cpu_type="arm64";;
-    *) local cpu_type="$machine_hardware_name";;
+    'x86_64') echo "amd64";;
+    'aarch64') echo "arm64";;
+    *) echo "$machine_hardware_name";;
   esac
-
-  echo "$cpu_type"
 }
 
 get_download_url() {
   local version="$1"
-  local platform="$(get_arch)"
+  local platform
+  platform="$(get_arch)"
   local url=""
   local version_no_prefix="${version#v}"
-  
+
   if [[ "$(printf '%s\n' "3.7.2" "$version_no_prefix" | sort -V | head -n1)" = "$version_no_prefix" ]]; then
     url="https://github.com/getsops/sops/releases/download/${version}/sops-${version}.${platform}"
   else
@@ -67,4 +72,3 @@ get_download_url() {
 }
 
 install_sops "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_INSTALL_PATH"
-
