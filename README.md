@@ -1,15 +1,33 @@
 # asdf-sops
 
-[![Build Status](https://travis-ci.org/feniix/asdf-sops.svg?branch=master)](https://travis-ci.org/feniix/asdf-sops)
+[![CI](https://github.com/feniix/asdf-sops/actions/workflows/ci.yml/badge.svg)](https://github.com/feniix/asdf-sops/actions/workflows/ci.yml)
 
-[Sops](https://github.com/mozilla/sops) plugin for the [asdf](https://github.com/asdf-vm/asdf) version manager.
+[SOPS](https://github.com/getsops/sops) plugin for the
+[asdf](https://asdf-vm.com/) version manager.
 
 ## Install
 
-```
+```bash
 asdf plugin add sops https://github.com/feniix/asdf-sops.git
 ```
 
 ## Use
 
-Check out the [asdf](https://github.com/asdf-vm/asdf) readme for instructions.
+```bash
+asdf list all sops
+asdf install sops latest
+asdf set -u sops latest
+sops --version
+```
+
+See the [asdf documentation](https://asdf-vm.com/manage/versions.html) for
+version-management commands.
+
+## Supported platforms
+
+CI exercises the plugin on current Ubuntu and macOS runners. SOPS release
+availability determines the supported operating-system and CPU combinations.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
