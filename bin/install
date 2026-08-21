@@ -61,8 +61,16 @@ get_download_url() {
   platform="$(get_arch)"
   local url=""
   local version_no_prefix="${version#v}"
+  local numeric_version="${version_no_prefix%%[-+]*}"
+  local major minor patch
+  IFS=. read -r major minor patch <<< "$numeric_version"
 
-  if [[ "$(printf '%s\n' "3.7.2" "$version_no_prefix" | sort -V | head -n1)" = "$version_no_prefix" ]]; then
+  if [[ ! "$major" =~ ^[0-9]+$ || ! "$minor" =~ ^[0-9]+$ || ! "$patch" =~ ^[0-9]+$ ]]; then
+    echo "Unsupported SOPS version: ${version}" >&2
+    return 1
+  fi
+
+  if ((major < 3 || (major == 3 && minor < 7) || (major == 3 && minor == 7 && patch <= 2))); then
     url="https://github.com/getsops/sops/releases/download/${version}/sops-${version}.${platform}"
   else
     url="https://github.com/getsops/sops/releases/download/${version}/sops-${version}.${platform}.$(get_cpu)"
