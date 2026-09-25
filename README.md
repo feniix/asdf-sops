@@ -5,6 +5,8 @@
 [SOPS](https://github.com/getsops/sops) plugin for the
 [asdf](https://asdf-vm.com/) version manager.
 
+More about why this exists and where it is useful: [feniix-hq.net/projects/asdf-sops](https://feniix-hq.net/projects/asdf-sops/).
+
 ## Install
 
 ```bash
